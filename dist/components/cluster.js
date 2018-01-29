@@ -24,11 +24,18 @@ var _getPropsValuesMixin = require('../utils/getPropsValuesMixin.js');
 
 var _getPropsValuesMixin2 = _interopRequireDefault(_getPropsValuesMixin);
 
-var _markerClustererPlus = require('marker-clusterer-plus');
-
-var _markerClustererPlus2 = _interopRequireDefault(_markerClustererPlus);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// import MarkerClusterer from 'marker-clusterer-plus';
+
+/* vim: set softtabstop=2 shiftwidth=2 expandtab : */
+
+/**
+  * @class Cluster
+  * @prop $clusterObject -- Exposes the marker clusterer to
+        descendent Marker classes. Override this if you area
+        extending the class
+**/
 
 var props = {
   maxZoom: {
@@ -47,14 +54,7 @@ var props = {
     type: Array,
     twoWay: false
   }
-}; /* vim: set softtabstop=2 shiftwidth=2 expandtab : */
-
-/**
-  * @class Cluster
-  * @prop $clusterObject -- Exposes the marker clusterer to
-        descendent Marker classes. Override this if you area
-        extending the class
-**/
+};
 
 var events = ['click', 'rightclick', 'dblclick', 'drag', 'dragstart', 'dragend', 'mouseup', 'mousedown', 'mouseover', 'mouseout'];
 
@@ -71,13 +71,35 @@ exports.default = {
 
     var options = (0, _clone3.default)(this.getPropsValues());
 
-    if (typeof _markerClustererPlus2.default === 'undefined') {
+    if (typeof OverlappingMarkerSpiderfier === 'undefined') {
       /* eslint-disable no-console */
-      console.error('MarkerClusterer is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/js-marker-clusterer/1.0.0/markerclusterer.js');
-      throw new Error('MarkerClusterer is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/js-marker-clusterer/1.0.0/markerclusterer.js');
+      console.error('OverlappingMarkerSpiderfier is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js');
+      throw new Error('OverlappingMarkerSpiderfier is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js');
     }
 
-    this.$clusterObject = new _markerClustererPlus2.default(this.$map, [], options);
+    var oms = new OverlappingMarkerSpiderfier(this.$map, options);
+    if (!oms.setMaxZoom) {
+      oms.setMaxZoom = function () {
+        return console.log('setMaxZoom');
+      };
+    }
+    if (!oms.setCalculator) {
+      oms.setCalculator = function () {
+        return console.log('setCalculator');
+      };
+    }
+    if (!oms.setGridSize) {
+      oms.setGridSize = function () {
+        return console.log('setGridSize');
+      };
+    }
+    if (!oms.setStyles) {
+      oms.setStyles = function () {
+        return console.log('setStyles');
+      };
+    }
+
+    this.$clusterObject = oms;
 
     (0, _propsBinder2.default)(this, this.$clusterObject, props, {
       afterModelChanged: function afterModelChanged(a, v) {

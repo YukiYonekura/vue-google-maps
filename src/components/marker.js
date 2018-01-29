@@ -1,4 +1,4 @@
-import {mapValues} from 'lodash';
+import { mapValues } from 'lodash';
 import eventsBinder from '../utils/eventsBinder.js';
 import propsBinder from '../utils/propsBinder.js';
 import getPropsValuesMixin from '../utils/getPropsValuesMixin.js';
@@ -61,6 +61,10 @@ const props = {
     twoWay: true,
     default: true,
   },
+  clustering: {
+    type: Boolean,
+    default: true
+  }
 };
 
 const events = [
@@ -133,12 +137,13 @@ export default {
   },
 
   methods: {
-    createMarker (options) {
+    createMarker(options) {
       this.$markerObject = new google.maps.Marker(options);
+      this.$markerObject.setClustering = console.log
       propsBinder(this, this.$markerObject, props);
       eventsBinder(this, this.$markerObject, events);
 
-      if (this.$clusterObject) {
+      if (this.$clusterObject && options.clustering) {
         this.$clusterObject.addMarker(this.$markerObject);
       }
     }

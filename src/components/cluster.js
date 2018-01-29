@@ -7,12 +7,12 @@
         extending the class
 **/
 
-import {clone} from 'lodash';
+import { clone } from 'lodash';
 import eventsBinder from '../utils/eventsBinder.js';
 import propsBinder from '../utils/propsBinder.js';
 import MapElementMixin from './mapElementMixin';
 import getPropsValuesMixin from '../utils/getPropsValuesMixin.js';
-import MarkerClusterer from 'marker-clusterer-plus';
+// import MarkerClusterer from 'marker-clusterer-plus';
 
 const props = {
   maxZoom: {
@@ -59,16 +59,22 @@ export default {
     );
   },
 
-  deferredReady () {
+  deferredReady() {
     const options = clone(this.getPropsValues());
 
-    if (typeof MarkerClusterer === 'undefined') {
+    if (typeof OverlappingMarkerSpiderfier === 'undefined') {
       /* eslint-disable no-console */
-      console.error('MarkerClusterer is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/js-marker-clusterer/1.0.0/markerclusterer.js');
-      throw new Error('MarkerClusterer is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/js-marker-clusterer/1.0.0/markerclusterer.js');
+      console.error('OverlappingMarkerSpiderfier is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js');
+      throw new Error('OverlappingMarkerSpiderfier is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js');
     }
 
-    this.$clusterObject = new MarkerClusterer(this.$map, [], options);
+    var oms = new OverlappingMarkerSpiderfier(this.$map, options);
+    if (!oms.setMaxZoom) { oms.setMaxZoom = () => console.log('setMaxZoom') }
+    if (!oms.setCalculator) { oms.setCalculator = () => console.log('setCalculator') }
+    if (!oms.setGridSize) { oms.setGridSize = () => console.log('setGridSize') }
+    if (!oms.setStyles) { oms.setStyles = () => console.log('setStyles') }
+
+    this.$clusterObject = oms;
 
     propsBinder(this, this.$clusterObject, props, {
       afterModelChanged: (a, v) => { // eslint-disable-line no-unused-vars

@@ -81,6 +81,10 @@ var props = {
   visible: {
     twoWay: true,
     default: true
+  },
+  clustering: {
+    type: Boolean,
+    default: true
   }
 };
 
@@ -144,10 +148,11 @@ exports.default = {
   methods: {
     createMarker: function createMarker(options) {
       this.$markerObject = new google.maps.Marker(options);
+      this.$markerObject.setClustering = console.log;
       (0, _propsBinder2.default)(this, this.$markerObject, props);
       (0, _eventsBinder2.default)(this, this.$markerObject, events);
 
-      if (this.$clusterObject) {
+      if (this.$clusterObject && options.clustering) {
         this.$clusterObject.addMarker(this.$markerObject);
       }
     }
