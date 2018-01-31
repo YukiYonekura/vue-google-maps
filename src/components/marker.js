@@ -3,8 +3,12 @@ import eventsBinder from '../utils/eventsBinder.js';
 import propsBinder from '../utils/propsBinder.js';
 import getPropsValuesMixin from '../utils/getPropsValuesMixin.js';
 import MapElementMixin from './mapElementMixin';
+// import LabeledMarker from './labeledMarker';
 
 const props = {
+  id: {
+    type: String
+  },
   animation: {
     twoWay: true,
     type: Number
@@ -139,12 +143,32 @@ export default {
   methods: {
     createMarker(options) {
       this.$markerObject = new google.maps.Marker(options);
-      this.$markerObject.setClustering = console.log
+      this.$markerObject.setId = id => { this.$markerObject.id = id; };
+      this.$markerObject.setClustering = (clustering) => { this.$markerObject.clustering = clustering; };
       propsBinder(this, this.$markerObject, props);
       eventsBinder(this, this.$markerObject, events);
 
-      if (this.$clusterObject && options.clustering) {
-        this.$clusterObject.addMarker(this.$markerObject);
+      if (this.$clusterObject) {
+        if (options.clustering) {
+          this.$clusterObject.addMarker(this.$markerObject);
+          google.maps.event.addListener(this.$markerObject, 'click', () => {
+            this.$emit('clickSpiderfier', { marker: this.$markerObject, oms: this.$clusterObject });
+          });
+
+          google.maps.event.addListener(this.$markerObject, 'spider_open', () => {
+            this.$markerObject.spiderOpen = true;
+            this.$emit('spiderOpen', { marker: this.$markerObject, oms: this.$clusterObject });
+          });
+
+          google.maps.event.addListener(this.$markerObject, 'spider_close', () => {
+            this.$markerObject.spiderOpen = false;
+            this.$emit('spiderClose', { marker: this.$markerObject, oms: this.$clusterObject });
+          });
+        } else {
+          google.maps.event.addListener(this.$markerObject, 'click', () => {
+            this.$emit('clickCenterOfSpiderfier', { marker: this.$markerObject, oms: this.$clusterObject });
+          });
+        }
       }
     }
   },

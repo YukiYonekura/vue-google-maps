@@ -30,6 +30,9 @@ const props = {
   styles: {
     type: Array,
     twoWay: false
+  },
+  spiderOption: {
+    type: Object
   }
 };
 
@@ -68,11 +71,22 @@ export default {
       throw new Error('OverlappingMarkerSpiderfier is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js');
     }
 
-    var oms = new OverlappingMarkerSpiderfier(this.$map, options);
-    if (!oms.setMaxZoom) { oms.setMaxZoom = () => console.log('setMaxZoom') }
-    if (!oms.setCalculator) { oms.setCalculator = () => console.log('setCalculator') }
-    if (!oms.setGridSize) { oms.setGridSize = () => console.log('setGridSize') }
-    if (!oms.setStyles) { oms.setStyles = () => console.log('setStyles') }
+    const oms = new OverlappingMarkerSpiderfier(this.$map, options.spiderOption);
+    if (!oms.setMaxZoom) { oms.setMaxZoom = () => { }; }
+    if (!oms.setCalculator) { oms.setCalculator = () => { }; }
+    if (!oms.setGridSize) { oms.setGridSize = () => { }; }
+    if (!oms.setStyles) { oms.setStyles = () => { }; }
+    if (!oms.setSpiderOption) { oms.setSpiderOption = () => { }; }
+
+    oms.addListener('format', (marker, status) => {
+      const opened = status === OverlappingMarkerSpiderfier.markerStatus.SPIDERFIED;
+      if (opened) {
+        google.maps.event.trigger(marker, 'spider_open');
+      } else {
+        google.maps.event.trigger(marker, 'spider_close');
+      }
+      this.$emit('update', { status, marker });
+    });
 
     this.$clusterObject = oms;
 
@@ -80,7 +94,9 @@ export default {
       afterModelChanged: (a, v) => { // eslint-disable-line no-unused-vars
         const oldMarkers = this.$clusterObject.getMarkers();
         this.$clusterObject.clearMarkers();
-        this.$clusterObject.addMarkers(oldMarkers);
+        oldMarkers.forEach(marker => {
+          this.$clusterObject.addMarker(marker);
+        });
       }
     });
     eventsBinder(this, this.$clusterObject, events);
@@ -90,9 +106,10 @@ export default {
     /* Performance optimization when destroying a large number of markers */
     this.$children.forEach(marker => {
       if (marker.$clusterObject === this.$clusterObject) {
-        marker.$clusterObject = null
+        marker.$clusterObject = null;
       }
-    })
+    });
+
     if (this.$clusterObject) {
       this.$clusterObject.clearMarkers();
     }

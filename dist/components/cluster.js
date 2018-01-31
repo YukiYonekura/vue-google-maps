@@ -53,6 +53,9 @@ var props = {
   styles: {
     type: Array,
     twoWay: false
+  },
+  spiderOption: {
+    type: Object
   }
 };
 
@@ -77,27 +80,32 @@ exports.default = {
       throw new Error('OverlappingMarkerSpiderfier is not installed! require() it or include it from https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js');
     }
 
-    var oms = new OverlappingMarkerSpiderfier(this.$map, options);
+    var oms = new OverlappingMarkerSpiderfier(this.$map, options.spiderOption);
     if (!oms.setMaxZoom) {
-      oms.setMaxZoom = function () {
-        return console.log('setMaxZoom');
-      };
+      oms.setMaxZoom = function () {};
     }
     if (!oms.setCalculator) {
-      oms.setCalculator = function () {
-        return console.log('setCalculator');
-      };
+      oms.setCalculator = function () {};
     }
     if (!oms.setGridSize) {
-      oms.setGridSize = function () {
-        return console.log('setGridSize');
-      };
+      oms.setGridSize = function () {};
     }
     if (!oms.setStyles) {
-      oms.setStyles = function () {
-        return console.log('setStyles');
-      };
+      oms.setStyles = function () {};
     }
+    if (!oms.setSpiderOption) {
+      oms.setSpiderOption = function () {};
+    }
+
+    oms.addListener('format', function (marker, status) {
+      var opened = status === OverlappingMarkerSpiderfier.markerStatus.SPIDERFIED;
+      if (opened) {
+        google.maps.event.trigger(marker, 'spider_open');
+      } else {
+        google.maps.event.trigger(marker, 'spider_close');
+      }
+      _this.$emit('update', { status: status, marker: marker });
+    });
 
     this.$clusterObject = oms;
 
@@ -106,7 +114,9 @@ exports.default = {
         // eslint-disable-line no-unused-vars
         var oldMarkers = _this.$clusterObject.getMarkers();
         _this.$clusterObject.clearMarkers();
-        _this.$clusterObject.addMarkers(oldMarkers);
+        oldMarkers.forEach(function (marker) {
+          _this.$clusterObject.addMarker(marker);
+        });
       }
     });
     (0, _eventsBinder2.default)(this, this.$clusterObject, events);
@@ -120,6 +130,7 @@ exports.default = {
         marker.$clusterObject = null;
       }
     });
+
     if (this.$clusterObject) {
       this.$clusterObject.clearMarkers();
     }
